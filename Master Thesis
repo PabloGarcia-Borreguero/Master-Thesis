@@ -1,0 +1,171 @@
+
+import community
+import networkx as nx 
+import matplotlib.pyplot as plt
+from igraph import summary
+import random
+import pandas as pd
+import time
+import numpy as np
+import pickle
+import networkx as nx 
+from networkx.algorithms.community import greedy_modularity_communities, label_propagation_communities, girvan_newman
+from community import best_partition
+from community import modularity, induced_graph
+import seaborn as sns
+from datetime import datetime
+import math
+from scipy import spatial
+from collections import defaultdict
+from itertools import combinations
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+from pandas_datareader import data as pdr
+from datetime import timedelta
+import yfinance as yf  
+import igraph 
+import matplotlib.lines as mlines
+
+
+#Preparing feature attributes for the nodes
+def dictionary_attributes(data):
+   dict1={}
+   for i in range(len(df_numpy)):
+        dict1[df_numpy[i][17]] = {}
+        if df_numpy[i][17] in data.keys():
+            
+            dict1[df_numpy[i][17]]["name"]=df_numpy[i][3] 
+            dict1[df_numpy[i][17]]["bot"]=df_numpy[i][16] 
+            dict1[df_numpy[i][17]]["statuses_count"]=int(df_numpy[i][4])
+            dict1[df_numpy[i][17]]["followers_count"]=int(df_numpy[i][5])
+            dict1[df_numpy[i][17]]["friends_count"]=int(df_numpy[i][6])
+            dict1[df_numpy[i][17]]["favourites_count"]=int(df_numpy[i][7]) 
+            dict1[df_numpy[i][17]]["listed_count"]=int(df_numpy[i][8]) 
+            dict1[df_numpy[i][17]]["url"]=df_numpy[i][9]
+            dict1[df_numpy[i][17]]["lang_user"]=df_numpy[i][10]
+            dict1[df_numpy[i][17]]["time_zone"]=df_numpy[i][11]
+            dict1[df_numpy[i][17]]["location"]=df_numpy[i][12]
+            dict1[df_numpy[i][17]]["verified"]=df_numpy[i][13]
+            dict1[df_numpy[i][17]]["description"]=df_numpy[i][14]
+            dict1[df_numpy[i][17]]["created_at_user"]=df_numpy[i][15]
+            dict1[df_numpy[i][17]]["id_tweet"]=df_numpy[i][17]
+            dict1[df_numpy[i][17]]["text"]=df_numpy[i][18]
+            dict1[df_numpy[i][17]]["user_id"]=df_numpy[i][19]
+            dict1[df_numpy[i][17]]["in_reply_to_status_id"]=df_numpy[i][20]
+            dict1[df_numpy[i][17]]["in_reply_to_user_id"]=df_numpy[i][21]
+            dict1[df_numpy[i][17]]["retweeted_status_id"]=df_numpy[i][22]
+            dict1[df_numpy[i][17]]["retweeted_user_id"]=df_numpy[i][23]
+            dict1[df_numpy[i][17]]["lang_tweet"]=df_numpy[i][24]
+            dict1[df_numpy[i][17]]["source"]=df_numpy[i][25]
+            dict1[df_numpy[i][17]]["tweet_date"]=df_numpy[i][26]
+   return dict1
+   
+   
+   def sentimentScore(Tweet):
+    analyzer = SentimentIntensityAnalyzer()
+    vs = analyzer.polarity_scores(Tweet)
+    compounded_score = vs.get("compound")
+    return compounded_score
+#https://github.com/north0n-FI/Twitter-moods-as-stock-price-predictors-on-Nasdaq/blob/master/Part_1_data_cleaning_and_feature_engineering.ipynb
+
+#Importing the selected vectors from the dataset
+def import_vector(data):
+   dict1 ={}
+   for i in range(len(df_numpy)):
+        if df_numpy[i][17] in data.keys():
+          dict1[df_numpy[i][17]]=[df_numpy[i][4],df_numpy[i][5],df_numpy[i][6],df_numpy[i][7], df_numpy[i][8], sentimentScore(str(df_numpy[i][14])),transform_date(df_numpy[i][26])]
+          attributes[df_numpy[i][17]]["Sentiment"]= sentimentScore(str(df_numpy[i][14]))
+          
+   dict2 ={}
+   for key, element in dict1.items():
+       #normalize = normalize_list(element)
+       dict2[key]= standardise(element)
+       
+ #Creating combinations out of the vectors
+ def wombo_combos(data):
+    listed = {}
+    alternative = {}
+    for key, value in data.items():
+        combos= list(combinations(value, 2))
+        if len(value)== 1:
+            alternative[key] =  value
+        else:
+            listed[key]= combos
+    return listed, alternative
+   return dict2
+   vectors = import_vector(cashtags_filtered)
+   
+   
+   #Computing the simmilarity score
+   def similarity_score():
+    simmilarity1 = defaultdict(lambda: defaultdict(lambda: list()))
+    for key, nodes in list(vector_edge.items()):
+        for node in nodes:
+            simmilarity =  1/ (1 + spatial.distance.euclidean(node[0][1], node[1][1]))
+            simmilarity1[key][node[0][0]].append(simmilarity)
+            simmilarity1[key][node[1][0]].append(simmilarity)
+    avg = defaultdict(lambda: defaultdict(lambda: list()))
+    for keys, items in list(simmilarity1.items()):  
+        for key, item in items.items():
+            average = np.mean(item, dtype = float)
+            avg[keys][key]= abs(average)
+    
+    return avg
+    
+    
+ #Graph Construction 
+ def create_graph(dict1):
+      G = nx.Graph()
+      for keys, values in list(similarity.items()):
+        G.add_node(keys)
+        for key, value in values.items():
+          G.add_edge(keys, key, weights=value)
+
+          if key in G.nodes():
+              continue
+          else :
+              G.add_node(key)
+      return G
+
+#Create partitions and computing modularity    
+partitions = best_partition(G,weight="weights")
+mod = modularity(partitions, G, weight="weights")
+
+#Computing the metrics for each D
+metrics ={}
+for i in groups.keys():
+    for k,v in centers.items():
+        if i == v["Community"]:
+            metrics[i]={}
+            
+            SG = G.subgraph(groups[i])
+            metrics[i]["Center"]= k
+            metrics[i]["Size"]= v["size"]
+            
+            #metrics of Internal Connectivity
+            metrics[i]["Density"]=nx.density(SG)
+
+            #metrics of External Connectivity
+  
+            metrics[i]["Cut Ratio"]=(nx.cut_size(G, SG, weight = "weight")/(nx.number_of_nodes(SG)*(nx.number_of_nodes(G)-nx.number_of_nodes(SG))))*1000
+            
+            #External and Internal Connectivity
+            metrics[i]['Conductance'] = nx.conductance(G, SG)
+  
+#financial data collection  
+def  download_financial():
+    finance= {}
+    date_event={}
+    #defaultdict(lambda: defaultdict(lambda: list()))
+    
+    for line in dates:
+        start = line[0]
+        event =line[1]
+        end= line[2]
+        for cashtags in line[3]:
+            for cashtag in cashtags:
+                if cashtag in list_top_centers:
+                    if cashtag not in finance.keys():
+                        finance[cashtag]= yf.download(cashtag, start= str(start), end= str(end))
+                        date_event[cashtag]= event
+    return finance, date_event
