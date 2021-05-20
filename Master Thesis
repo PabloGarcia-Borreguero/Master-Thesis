@@ -60,13 +60,13 @@ def dictionary_attributes(data):
             dict1[df_numpy[i][17]]["tweet_date"]=df_numpy[i][26]
    return dict1
    
-   
-   def sentimentScore(Tweet):
+ #Generating Sentiment
+ def sentimentScore(Tweet):
     analyzer = SentimentIntensityAnalyzer()
     vs = analyzer.polarity_scores(Tweet)
     compounded_score = vs.get("compound")
     return compounded_score
-#https://github.com/north0n-FI/Twitter-moods-as-stock-price-predictors-on-Nasdaq/blob/master/Part_1_data_cleaning_and_feature_engineering.ipynb
+retrieved from #https://github.com/north0n-FI/Twitter-moods-as-stock-price-predictors-on-Nasdaq/blob/master/Part_1_data_cleaning_and_feature_engineering.ipynb
 
 #Importing the selected vectors from the dataset
 def import_vector(data):
@@ -80,7 +80,8 @@ def import_vector(data):
    for key, element in dict1.items():
        #normalize = normalize_list(element)
        dict2[key]= standardise(element)
-       
+   return dict2
+   
  #Creating combinations out of the vectors
  def wombo_combos(data):
     listed = {}
@@ -131,7 +132,7 @@ def import_vector(data):
 partitions = best_partition(G,weight="weights")
 mod = modularity(partitions, G, weight="weights")
 
-#Computing the metrics for each D
+#Computing the evaluation metrics for each Community
 metrics ={}
 for i in groups.keys():
     for k,v in centers.items():
@@ -144,15 +145,14 @@ for i in groups.keys():
             
             #metrics of Internal Connectivity
             metrics[i]["Density"]=nx.density(SG)
-
+            
             #metrics of External Connectivity
-  
             metrics[i]["Cut Ratio"]=(nx.cut_size(G, SG, weight = "weight")/(nx.number_of_nodes(SG)*(nx.number_of_nodes(G)-nx.number_of_nodes(SG))))*1000
             
             #External and Internal Connectivity
             metrics[i]['Conductance'] = nx.conductance(G, SG)
   
-#financial data collection  
+#Financial data collection  
 def  download_financial():
     finance= {}
     date_event={}
